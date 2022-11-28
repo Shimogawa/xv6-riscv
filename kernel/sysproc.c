@@ -4,6 +4,7 @@
 #include "proc.h"
 #include "riscv.h"
 #include "spinlock.h"
+#include "sysinfo.h"
 #include "types.h"
 
 uint64
@@ -89,4 +90,11 @@ sys_trace(void) {
   argint(0, &mask);
   myproc()->tracemask = mask;
   return 0;
+}
+
+uint64
+sys_sysinfo(void) {
+  uint64 info;
+  argaddr(0, &info);
+  return sysinfo(info);
 }
