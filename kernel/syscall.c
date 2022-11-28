@@ -1,20 +1,20 @@
-#include "types.h"
-#include "param.h"
-#include "memlayout.h"
-#include "riscv.h"
-#include "spinlock.h"
-#include "proc.h"
 #include "syscall.h"
 #include "defs.h"
+#include "memlayout.h"
+#include "param.h"
+#include "proc.h"
+#include "riscv.h"
+#include "spinlock.h"
+#include "types.h"
 
 // Fetch the uint64 at addr from the current process.
 int
-fetchaddr(uint64 addr, uint64 *ip)
-{
-  struct proc *p = myproc();
-  if(addr >= p->sz || addr+sizeof(uint64) > p->sz) // both tests needed, in case of overflow
+fetchaddr(uint64 addr, uint64* ip) {
+  struct proc* p = myproc();
+  if (addr >= p->sz ||
+      addr + sizeof(uint64) > p->sz) // both tests needed, in case of overflow
     return -1;
-  if(copyin(p->pagetable, (char *)ip, addr, sizeof(*ip)) != 0)
+  if (copyin(p->pagetable, (char*)ip, addr, sizeof(*ip)) != 0)
     return -1;
   return 0;
 }
@@ -22,18 +22,16 @@ fetchaddr(uint64 addr, uint64 *ip)
 // Fetch the nul-terminated string at addr from the current process.
 // Returns length of string, not including nul, or -1 for error.
 int
-fetchstr(uint64 addr, char *buf, int max)
-{
-  struct proc *p = myproc();
-  if(copyinstr(p->pagetable, buf, addr, max) < 0)
+fetchstr(uint64 addr, char* buf, int max) {
+  struct proc* p = myproc();
+  if (copyinstr(p->pagetable, buf, addr, max) < 0)
     return -1;
   return strlen(buf);
 }
 
 static uint64
-argraw(int n)
-{
-  struct proc *p = myproc();
+argraw(int n) {
+  struct proc* p = myproc();
   switch (n) {
   case 0:
     return p->trapframe->a0;
@@ -54,8 +52,7 @@ argraw(int n)
 
 // Fetch the nth 32-bit system call argument.
 void
-argint(int n, int *ip)
-{
+argint(int n, int* ip) {
   *ip = argraw(n);
 }
 
@@ -63,8 +60,7 @@ argint(int n, int *ip)
 // Doesn't check for legality, since
 // copyin/copyout will do that.
 void
-argaddr(int n, uint64 *ip)
-{
+argaddr(int n, uint64* ip) {
   *ip = argraw(n);
 }
 
@@ -72,8 +68,7 @@ argaddr(int n, uint64 *ip)
 // Copies into buf, at most max.
 // Returns string length if OK (including nul), -1 if error.
 int
-argstr(int n, char *buf, int max)
-{
+argstr(int n, char* buf, int max) {
   uint64 addr;
   argaddr(n, &addr);
   return fetchstr(addr, buf, max);
@@ -101,6 +96,9 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
+extern uint64 sys_trace(void);
+
+// clang-format off
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -126,22 +124,53 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_trace]   sys_trace,
 };
 
+static const char* syscall_names[] = {
+[SYS_fork]    "fork",
+[SYS_exit]    "exit",
+[SYS_wait]    "wait",
+[SYS_pipe]    "pipe",
+[SYS_read]    "read",
+[SYS_kill]    "kill",
+[SYS_exec]    "exec",
+[SYS_fstat]   "fstat",
+[SYS_chdir]   "chdir",
+[SYS_dup]     "dup",
+[SYS_getpid]  "getpid",
+[SYS_sbrk]    "sbrk",
+[SYS_sleep]   "sleep",
+[SYS_uptime]  "uptime",
+[SYS_open]    "open",
+[SYS_write]   "write",
+[SYS_mknod]   "mknod",
+[SYS_unlink]  "unlink",
+[SYS_link]    "link",
+[SYS_mkdir]   "mkdir",
+[SYS_close]   "close",
+[SYS_trace]   "trace",
+};
+
+// clang-format on
+
 void
-syscall(void)
-{
+syscall(void) {
   int num;
-  struct proc *p = myproc();
+  struct proc* p = myproc();
 
   num = p->trapframe->a7;
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+  if (num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
     p->trapframe->a0 = syscalls[num]();
   } else {
-    printf("%d %s: unknown sys call %d\n",
-            p->pid, p->name, num);
+    printf("%d %s: unknown sys call %d\n", p->pid, p->name, num);
     p->trapframe->a0 = -1;
+    return;
+  }
+  if ((p->tracemask >> num) & 1) {
+    printf("%d: syscall %s -> returned %d\n", p->pid, syscall_names[num],
+           p->trapframe->a0);
   }
 }

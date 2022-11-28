@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM
+AlwaysBreakAfterReturnType: AllDefinitions
+DerivePointerAlignment: false
+PointerAlignment: Left
+AlignConsecutiveMacros: true

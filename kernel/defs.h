@@ -1,3 +1,11 @@
+#ifndef K_DEFS_H
+#define K_DEFS_H
+
+#include "riscv.h"
+#include "types.h"
+
+// clang-format off
+
 struct buf;
 struct context;
 struct file;
@@ -187,3 +195,5 @@ void            virtio_disk_intr(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+
+#endif // K_DEFS_H
