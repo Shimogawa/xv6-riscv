@@ -1,19 +1,8 @@
 #ifndef U_USER_H
 #define U_USER_H
 
+#include "common/std.h"
 #include "kernel/types.h"
-
-#define STDIN  0
-#define STDOUT 1
-#define STDERR 2
-
-#define NULL 0
-
-// stdbool
-typedef char bool;
-
-#define TRUE  1
-#define FALSE 0
 
 struct stat;
 struct sysinfo;
@@ -42,6 +31,7 @@ int sleep(int);
 int uptime(void);
 int trace(int);
 int sysinfo(struct sysinfo*);
+int pgaccess(void* mem, int npages, void* bitmap);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -61,5 +51,7 @@ int atoi(const char*);
 int strtoi(const char*, char**, int);
 int memcmp(const void*, const void*, uint);
 void* memcpy(void*, const void*, uint);
+// usyscall
+int ugetpid(void);
 
 #endif // U_USER_H

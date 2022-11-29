@@ -1,14 +1,14 @@
-#include "types.h"
-#include "param.h"
-#include "memlayout.h"
-#include "riscv.h"
 #include "defs.h"
+#include "memlayout.h"
+#include "param.h"
+#include "riscv.h"
+#include "types.h"
 
 void main();
 void timerinit();
 
 // entry.S needs one stack per CPU.
-__attribute__ ((aligned (16))) char stack0[4096 * NCPU];
+__attribute__((aligned(16))) char stack0[4096 * NCPU];
 
 // a scratch area per CPU for machine-mode timer interrupts.
 uint64 timer_scratch[NCPU][5];
@@ -18,8 +18,7 @@ extern void timervec();
 
 // entry.S jumps here in machine mode on stack0.
 void
-start()
-{
+start() {
   // set M Previous Privilege mode to Supervisor, for mret.
   unsigned long x = r_mstatus();
   x &= ~MSTATUS_MPP_MASK;
@@ -60,8 +59,7 @@ start()
 // which turns them into software interrupts for
 // devintr() in trap.c.
 void
-timerinit()
-{
+timerinit() {
   // each CPU has a separate source of timer interrupts.
   int id = r_mhartid();
 
@@ -73,7 +71,7 @@ timerinit()
   // scratch[0..2] : space for timervec to save registers.
   // scratch[3] : address of CLINT MTIMECMP register.
   // scratch[4] : desired interval (in cycles) between timer interrupts.
-  uint64 *scratch = &timer_scratch[id][0];
+  uint64* scratch = &timer_scratch[id][0];
   scratch[3] = CLINT_MTIMECMP(id);
   scratch[4] = interval;
   w_mscratch((uint64)scratch);

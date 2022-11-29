@@ -98,3 +98,28 @@ sys_sysinfo(void) {
   argaddr(0, &info);
   return sysinfo(info);
 }
+
+uint64
+sys_pgaccess(void) {
+  uint64 va, buf;
+  int numpg;
+  argaddr(0, &va);
+  argint(1, &numpg);
+  argaddr(2, &buf);
+  if (numpg <= 0)
+    return -1;
+  char bm[(numpg - 1) / 8 + 1];
+  memset(bm, 0, (numpg - 1) / 8 + 1);
+  pagetable_t pagetable = myproc()->pagetable;
+  pte_t* pte;
+  for (int i = 0; i < numpg; i++, va += PGSIZE) {
+    pte = walk(pagetable, va, FALSE);
+    if (pte == NULL)
+      continue;
+    if (*pte & PTE_A) {
+      bm[i / 8] |= (1 << (i % 8));
+      *pte &= ~PTE_A;
+    }
+  }
+  return copyout(pagetable, buf, bm, (numpg - 1) / 8 + 1);
+}

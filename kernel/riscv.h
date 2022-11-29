@@ -19,6 +19,7 @@ r_mhartid() {
 #define MSTATUS_MPP_M    (3L << 11)
 #define MSTATUS_MPP_S    (1L << 11)
 #define MSTATUS_MPP_U    (0L << 11)
+#define MSTATUS_FP_E     (1L << 13)
 #define MSTATUS_MIE      (1L << 3) // machine-mode interrupt enable.
 
 static inline uint64
@@ -309,6 +310,7 @@ typedef uint64* pagetable_t; // 512 PTEs
 #define PTE_W (1L << 2)
 #define PTE_X (1L << 3)
 #define PTE_U (1L << 4) // user can access
+#define PTE_A (1L << 6) // accessed
 
 // shift a physical address to the right place for a PTE.
 #define PA2PTE(pa) ((((uint64)pa) >> 12) << 10)
@@ -318,9 +320,11 @@ typedef uint64* pagetable_t; // 512 PTEs
 #define PTE_FLAGS(pte) ((pte)&0x3FF)
 
 // extract the three 9-bit page table indices from a virtual address.
+#define PXBITS         9     // 9 bits
 #define PXMASK         0x1FF // 9 bits
-#define PXSHIFT(level) (PGSHIFT + (9 * (level)))
+#define PXSHIFT(level) (PGSHIFT + (PXBITS * (level)))
 #define PX(level, va)  ((((uint64)(va)) >> PXSHIFT(level)) & PXMASK)
+#define NPTEENTRY      512 // 2^9
 
 // one beyond the highest possible virtual address.
 // MAXVA is actually one bit less than the max allowed by

@@ -128,6 +128,7 @@ UPROGS=\
 	$U/_ln\
 	$U/_ls\
 	$U/_mkdir\
+	$U/_pgtbltest\
 	$U/_pingpong\
 	$U/_primes\
 	$U/_rm\
