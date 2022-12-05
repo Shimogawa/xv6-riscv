@@ -1,5 +1,7 @@
 // On-disk file system format.
 // Both the kernel and user programs use this header file.
+#ifndef K_FS_H
+#define K_FS_H
 
 #include "kernel/types.h"
 
@@ -58,3 +60,5 @@ struct dirent {
   ushort inum;
   char name[DIRSIZ];
 };
+
+#endif // K_FS_H

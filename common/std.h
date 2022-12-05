@@ -21,6 +21,8 @@ typedef uint64 size_t;
 #define STDOUT 1
 #define STDERR 2
 
+#ifndef NULL
 #define NULL 0
+#endif
 
 #endif // C_STD_H

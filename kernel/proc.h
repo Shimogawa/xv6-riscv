@@ -90,6 +90,13 @@ struct trapframe {
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+struct alarmstat {
+  int interval;                // alarm interval
+  void (*handler)();           // handler
+  int tickleft;                // ticks left to call handler
+  struct trapframe* trapframe; // remembered data page for proc
+};
+
 // Per-process state
 struct proc {
   struct spinlock lock;
@@ -115,6 +122,7 @@ struct proc {
   struct inode* cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int tracemask;               // Trace mask
+  struct alarmstat alarmstat;  // alarm state
 };
 
 #endif // K_PROC_H
